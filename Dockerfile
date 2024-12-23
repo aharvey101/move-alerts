@@ -7,7 +7,6 @@ COPY . .
 RUN bun install --frozen-lockfile
 
 # Build the application
-RUN bun run build
 
 EXPOSE 3000
 
