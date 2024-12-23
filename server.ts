@@ -5,7 +5,7 @@ interface WebSocketData {
 
 interface ServerConfig {
     timeframes: string[];
-    onThresholdCrossing: (symbol: string, timeframe: string, value: number) => void;
+    onThresholdCrossing: (symbol: string, timeframe: string, value: number, openPrice: number) => void;
 }
 
 export async function sendTelegramAlert(message: string) {
@@ -121,7 +121,7 @@ export class BinanceWebSocketServer {
                     const percentChange = ((close - open) / open) * 100;
 
                     if (!this.isOnCooldown(symbol)) {
-                        config.onThresholdCrossing(symbol, kline.i, percentChange);
+                        config.onThresholdCrossing(symbol, kline.i, percentChange, open);
                         this.setAlertCooldown(symbol);
                     }
                 }
