@@ -123,9 +123,7 @@ export class BinanceWebSocketServer {
 
           const key = `${symbol}-${kline.i}-${candleOpenTime}-${open}`;
           if (!this.processedCandles.get(key)) {
-            this.onThresholdCrossing(symbol, kline.i, percentChange);
-
-            this.processedCandles.set(key, percentChange);
+            this.onThresholdCrossing(symbol, kline.i, percentChange, key);
           }
         }
       } catch (error) {
@@ -153,16 +151,19 @@ export class BinanceWebSocketServer {
     symbol: string,
     timeframe: string,
     value: number,
+		key: string
   ) {
     if (value > 5) {
       sendTelegramAlert(
         `🟢 ${symbol} crossed above 5% on ${timeframe} timeframe (${value.toFixed(2)}%)`,
       );
+				this.processedCandles.set(key, value)
     }
     if (value < -5) {
       sendTelegramAlert(
         `🔴 ${symbol} crossed below -5% on ${timeframe} timeframe (${value.toFixed(2)}%)`,
       );
+				this.processedCandles.set(key, value)
     }
   }
 
