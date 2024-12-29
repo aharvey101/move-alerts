@@ -15,7 +15,7 @@ enum PercentThreshold {
 
 export async function sendTelegramAlert(message: string) {
   try {
-    console.log("SENDING TELEGRAM ALERT", message);
+    console.info("SENDING TELEGRAM ALERT " + new Date().toISOString(), message);
     const url = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`;
     await fetch(url, {
       method: "POST",
@@ -37,14 +37,14 @@ export class BinanceWebSocketServer {
   private connections: WebSocket[] = [];
   public isInitialized: boolean = false;
   private processedCandles: Map<string, number> = new Map();
-  private readonly oneDay = 1000 * 60 * 60 * 24;
+  private readonly oneHour = 1000 * 60 * 60;
 
   constructor(config: ServerConfig) {
     this.initializeConnections(config);
 
     setInterval(() => {
       this.processedCandles.clear();
-    }, this.oneDay);
+    }, this.oneHour);
   }
 
   private chunkArray<T>(array: T[], size: number): T[][] {
@@ -58,9 +58,6 @@ export class BinanceWebSocketServer {
   private async initializeConnections(config: ServerConfig) {
     try {
       const usdtPairs = await this.fetchUsdtPairs();
-      if (!usdtPairs.length) {
-        throw new Error("No USDT pairs found");
-      }
 
       // Close existing connections
       this.close();
@@ -134,19 +131,20 @@ export class BinanceWebSocketServer {
           const key = `${symbol}-${kline.i}-${candleOpenTime}-${open}`;
 
           const threshold = Number(PercentThreshold[kline.i]);
-          if (!this.processedCandles.get(key)) {
-
-            if (percentChange > threshold) {
-              sendTelegramAlert(`🟢 ${symbol} crossed above ${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
-              this.processedCandles.set(key, percentChange);
-            }
-
-            if (percentChange < -threshold) {
-              sendTelegramAlert(`🔴 ${symbol} crossed below -${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
-              this.processedCandles.set(key, percentChange);
-            }
-
+          if (this.processedCandles.get(key)) {
+            return
           }
+
+          if (percentChange > threshold) {
+            sendTelegramAlert(`🟢 ${symbol} crossed above ${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+            this.processedCandles.set(key, percentChange);
+          }
+
+          if (percentChange < -threshold) {
+            sendTelegramAlert(`🔴 ${symbol} crossed below -${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+            this.processedCandles.set(key, percentChange);
+          }
+
         }
 
       } catch (error) {
