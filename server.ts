@@ -137,12 +137,12 @@ export class BinanceWebSocketServer {
           if (!this.processedCandles.get(key)) {
 
             if (percentChange > threshold) {
-              sendTelegramAlert(`🟢 ${symbol} crossed above ${threshold} on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+              sendTelegramAlert(`🟢 ${symbol} crossed above ${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
               this.processedCandles.set(key, percentChange);
             }
 
             if (percentChange < -threshold) {
-              sendTelegramAlert(`🔴 ${symbol} crossed below -${threshold} on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+              sendTelegramAlert(`🔴 ${symbol} crossed below -${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
               this.processedCandles.set(key, percentChange);
             }
 
