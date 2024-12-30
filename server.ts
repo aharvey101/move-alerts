@@ -128,7 +128,7 @@ export class BinanceWebSocketServer {
           const close = parseFloat(kline.c);
           const candleOpenTime = kline.t;
           const percentChange = ((close - open) / open) * 100;
-          const key = `${symbol}-${kline.i}-${candleOpenTime}-${open}`;
+          const key = `${symbol}-${candleOpenTime}-${open}`;
 
           const threshold = Number(PercentThreshold[kline.i]);
           if (this.processedCandles.get(key)) {
