@@ -3,14 +3,10 @@ interface ServerConfig {
 }
 
 enum PercentThreshold {
-  "5m" = 1,
-  "15m" = 2,
+  "5m" = 3,
+  "15m" = 3,
   "30m" = 5,
   "1h" = 10,
-  "4h" = 20,
-  "8h" = 30,
-  "12h" = 40,
-  "1d" = 50,
 }
 
 export async function sendTelegramAlert(message: string) {
