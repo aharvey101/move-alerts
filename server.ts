@@ -3,7 +3,7 @@ interface ServerConfig {
 }
 
 enum PercentThreshold {
-  "5m" = 3,
+  "5m" = 2,
   "15m" = 3,
   "30m" = 5,
   "1h" = 10,
@@ -37,10 +37,6 @@ export class BinanceWebSocketServer {
 
   constructor(config: ServerConfig) {
     this.initializeConnections(config);
-
-    setInterval(() => {
-      this.processedCandles.clear();
-    }, this.oneHour);
   }
 
   private chunkArray<T>(array: T[], size: number): T[][] {
@@ -125,24 +121,26 @@ export class BinanceWebSocketServer {
           const candleOpenTime = kline.t;
           const percentChange = ((close - open) / open) * 100;
           const key = `${candleOpenTime}-${open}`;
-
           const threshold = Number(PercentThreshold[kline.i]);
+
           if (this.processedCandles.get(key)) {
-            return
+            return;
           }
 
           if (percentChange > threshold) {
-            sendTelegramAlert(`🟢 ${symbol} crossed above ${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+            sendTelegramAlert(
+              `🟢 ${symbol} crossed above ${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`,
+            );
             this.processedCandles.set(key, percentChange);
           }
 
           if (percentChange < -threshold) {
-            sendTelegramAlert(`🔴 ${symbol} crossed below -${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`);
+            sendTelegramAlert(
+              `🔴 ${symbol} crossed below -${threshold}% on ${kline.i} timeframe (${percentChange.toFixed(2)}%)`,
+            );
             this.processedCandles.set(key, percentChange);
           }
-
         }
-
       } catch (error) {
         console.error("Error processing WebSocket message:", error);
       }
@@ -163,7 +161,6 @@ export class BinanceWebSocketServer {
       ws.close();
     };
   }
-
 
   public close() {
     this.connections.forEach((ws) => ws.close());
